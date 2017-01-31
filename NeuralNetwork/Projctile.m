@@ -1,0 +1,58 @@
+clear all; close all; clc;
+
+rng(1);
+data = load('projectiles.csv');
+
+%data preparation for x-axis
+x_features = data(:, [1,2]);
+x_features(2:end, 2) = x_features(1:end-1, 2);
+temp = x_features(:, 1) < 1;
+x_features(temp, 2) = 0;
+x_labels = data(:, 2);
+
+%data preparation for y-axis
+y_features = data(:, [1, 3]);
+y_features(2:end, 2) = y_features(1:end-1, 2);
+temp = y_features(:, 1) < 1;
+y_features(temp, 2) = 0;
+y_labels = data(:, 3);
+
+% %%%% parameters %%%%%%%%%%
+% hiddenLayerSize = 100;
+% trainingFunction = 'trainlm';
+% 
+% %%%% model for x axis prediction %%%%%%%%%%%
+% model_x = fitnet(hiddenLayerSize, trainingFunction); 
+% model_x = train(model_x, x_features', x_labels');
+% 
+% %%%% model for y axis prediction %%%%%%%%%%%
+% model_y = fitnet(hiddenLayerSize, trainingFunction); 
+% model_y = train(model_y, y_features', y_labels');
+% 
+% %test data x
+% x = [1, 0];
+% predicted_x = model_x(x');
+% 
+% %test data y
+% y = [1, 0];
+% predicted_y = model_y(y');
+
+
+hiddenLayerSize = 20;
+net = fitnet(hiddenLayerSize);
+
+% Set up Division of Data for Training, Validation, Testing
+net.divideParam.trainRatio = 70/100;
+net.divideParam.valRatio = 15/100;
+net.divideParam.testRatio = 15/100;
+ 
+% Train the Network
+[net,tr] = train(net,y_features', y_labels');
+ 
+% Test the Network
+outputs = net(y_features');
+errors = gsubtract(outputs,y_labels');
+performance = perform(net,y_labels',outputs)
+
+% View the Network
+view(net)
